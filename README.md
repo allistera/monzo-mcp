@@ -13,6 +13,31 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 - Read-only by default; writes gated behind `MONZO_MODE=write`
 - Full API coverage: accounts, balance, pots (deposit/withdraw), transactions (list/get/annotate), feed items, attachments, receipts, webhooks
 
+## Install
+
+### Via npm (recommended)
+
+```sh
+# one-time OAuth setup
+MONZO_CLIENT_ID=oauth2client_... MONZO_CLIENT_SECRET=mnzconf.... \
+  npx monzo-mcp auth
+
+# then add to your MCP client config (see "Configure your MCP client" below)
+```
+
+### Via Claude Desktop Extension (.dxt)
+
+Download the latest `monzo-mcp-vX.Y.Z.dxt` from the [releases page](https://github.com/allistera/monzo-mcp/releases) and double-click to install into Claude Desktop. You'll still need to run the OAuth flow once — see step 3 below.
+
+### From source
+
+```sh
+git clone https://github.com/allistera/monzo-mcp.git
+cd monzo-mcp
+npm install
+npm run build
+```
+
 ## Setup
 
 ### 1. Register an OAuth client
@@ -137,6 +162,28 @@ CI runs typecheck, lint, format check, and build on Node 20 & 22.
 - **Dependabot version updates** (`.github/dependabot.yml`) — runs weekly, Mondays 08:00 London time:
   - **npm**: minor + patch updates grouped into one PR per group (`dev-dependencies`, `production-dependencies`); major bumps come as standalone PRs for manual review.
   - **github-actions**: weekly updates for any pinned actions in the workflows.
+
+### Releases
+
+Versioning is automated. We use **[release-please](https://github.com/googleapis/release-please)** with [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `fix: …` → patch bump
+- `feat: …` → minor bump
+- `feat!: …` or a `BREAKING CHANGE:` footer → major bump (while pre-1.0, breaking changes bump the minor)
+- `docs:`, `chore:`, `ci:`, `refactor:`, `test:`, `build:` → no version bump
+
+A PR-title check (`.github/workflows/pr-title.yml`) enforces the format. Since `main` uses squash-merge, the PR title becomes the commit message.
+
+**The release cycle:**
+
+1. Merge Conventional-Commit PRs into `main`.
+2. The `release-please` workflow keeps an open "Release PR" up to date — it bumps the version in `package.json`, `manifest.json`, and `.release-please-manifest.json`, and writes a `CHANGELOG.md`.
+3. Merging the Release PR creates a Git tag and a GitHub release.
+4. The `publish` workflow triggers on `release.published`:
+   - Publishes to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements) (signed attestation back to the workflow run).
+   - Builds the Claude Desktop Extension bundle (`.dxt`) and attaches it to the GitHub release.
+
+**Required secret:** `NPM_TOKEN` — an npm automation token with publish access. Set it in repo settings → Secrets and variables → Actions.
 
 ### Branch protection
 
