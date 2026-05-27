@@ -64,42 +64,42 @@ Set `MONZO_MODE=write` to expose mutating tools.
 
 ### Read mode (`MONZO_MODE=read`, default)
 
-| Tool | Description |
-| --- | --- |
-| `whoami` | Verify token, return authenticated user |
-| `list_accounts` | List accounts (filter by `account_type`) |
-| `get_balance` | Balance for an account |
-| `list_pots` | List pots for a current account |
+| Tool                | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `whoami`            | Verify token, return authenticated user                            |
+| `list_accounts`     | List accounts (filter by `account_type`)                           |
+| `get_balance`       | Balance for an account                                             |
+| `list_pots`         | List pots for a current account                                    |
 | `list_transactions` | List transactions, with pagination and optional merchant expansion |
-| `get_transaction` | Retrieve a single transaction |
-| `list_webhooks` | List webhooks for an account |
-| `get_receipt` | Retrieve a receipt by `external_id` |
+| `get_transaction`   | Retrieve a single transaction                                      |
+| `list_webhooks`     | List webhooks for an account                                       |
+| `get_receipt`       | Retrieve a receipt by `external_id`                                |
 
 ### Write mode (`MONZO_MODE=write`, also enables all read tools)
 
-| Tool | Description |
-| --- | --- |
-| `annotate_transaction` | Add/remove transaction metadata |
-| `pot_deposit` | Move funds account → pot |
-| `pot_withdraw` | Move funds pot → account |
-| `create_feed_item` | Push a basic feed item to the user's feed |
-| `attachment_upload` | Get a temporary upload URL |
-| `attachment_register` | Attach an uploaded file to a transaction |
-| `attachment_deregister` | Remove an attachment |
-| `create_receipt` | Create/update a structured receipt |
-| `delete_receipt` | Delete a receipt |
-| `register_webhook` | Subscribe to `transaction.created` events |
-| `delete_webhook` | Unsubscribe |
-| `logout` | Invalidate the current access token |
+| Tool                    | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `annotate_transaction`  | Add/remove transaction metadata           |
+| `pot_deposit`           | Move funds account → pot                  |
+| `pot_withdraw`          | Move funds pot → account                  |
+| `create_feed_item`      | Push a basic feed item to the user's feed |
+| `attachment_upload`     | Get a temporary upload URL                |
+| `attachment_register`   | Attach an uploaded file to a transaction  |
+| `attachment_deregister` | Remove an attachment                      |
+| `create_receipt`        | Create/update a structured receipt        |
+| `delete_receipt`        | Delete a receipt                          |
+| `register_webhook`      | Subscribe to `transaction.created` events |
+| `delete_webhook`        | Unsubscribe                               |
+| `logout`                | Invalidate the current access token       |
 
 ## Environment variables
 
-| Var | Required | Description |
-| --- | --- | --- |
-| `MONZO_CLIENT_ID` | for `auth` | OAuth client id |
-| `MONZO_CLIENT_SECRET` | for `auth` | OAuth client secret |
-| `MONZO_REDIRECT_URI` | no | Defaults to `http://localhost:8765/callback` |
-| `MONZO_MODE` | no | `read` (default) or `write` |
+| Var                   | Required   | Description                                  |
+| --------------------- | ---------- | -------------------------------------------- |
+| `MONZO_CLIENT_ID`     | for `auth` | OAuth client id                              |
+| `MONZO_CLIENT_SECRET` | for `auth` | OAuth client secret                          |
+| `MONZO_REDIRECT_URI`  | no         | Defaults to `http://localhost:8765/callback` |
+| `MONZO_MODE`          | no         | `read` (default) or `write`                  |
 
 ## Caveats from Monzo's API
 
