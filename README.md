@@ -119,6 +119,38 @@ npm run build
 
 CI runs typecheck, lint, format check, and build on Node 20 & 22.
 
+## Repository policies
+
+### CI
+
+- `.github/workflows/ci.yml` — typecheck, ESLint, Prettier check, build, and `npm test` on Node 20 & 22. Runs on every PR and on push to `main`.
+
+### Security scanning
+
+- **CodeQL** (`.github/workflows/codeql.yml`) — JavaScript/TypeScript analysis with the `security-and-quality` query suite. Runs on every PR, on push to `main`, and weekly (Mondays 04:23 UTC). Required to merge.
+- **Secret scanning + push protection** — enabled. Commits containing recognised secret patterns are blocked at `git push`.
+- **Dependabot vulnerability alerts** — enabled.
+
+### Dependency updates
+
+- **Dependabot security updates** — auto-opens a PR the moment a vulnerability is published against a dependency, independent of the schedule below.
+- **Dependabot version updates** (`.github/dependabot.yml`) — runs weekly, Mondays 08:00 London time:
+  - **npm**: minor + patch updates grouped into one PR per group (`dev-dependencies`, `production-dependencies`); major bumps come as standalone PRs for manual review.
+  - **github-actions**: weekly updates for any pinned actions in the workflows.
+
+### Branch protection
+
+`main` is protected by a repository ruleset. The author of a change cannot bypass it.
+
+- Pull request required to merge (0 reviewer approvals — solo-friendly; bump if you add collaborators).
+- Required status checks (strict — branch must be up to date with `main`):
+  - `typecheck / lint / build (20)`
+  - `typecheck / lint / build (22)`
+  - `Analyze javascript-typescript`
+- Linear history required (no merge commits — use rebase or squash).
+- Force pushes blocked, branch deletion blocked.
+- Open conversation threads must be resolved before merge.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
