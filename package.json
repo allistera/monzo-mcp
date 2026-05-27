@@ -1,15 +1,39 @@
 {
   "name": "monzo-mcp",
   "version": "0.1.0",
-  "description": "MCP server for the Monzo banking API",
+  "description": "MCP server for the Monzo banking API (OAuth 2.0, stdio)",
   "type": "module",
   "bin": {
     "monzo-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "monzo",
+    "banking",
+    "oauth2",
+    "claude"
+  ],
+  "author": "Allister Antosik",
+  "license": "MIT",
+  "homepage": "https://github.com/allistera/monzo-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/allistera/monzo-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/allistera/monzo-mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -19,7 +43,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"no tests yet\" && exit 0"
+    "test": "echo \"no tests yet\" && exit 0",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
