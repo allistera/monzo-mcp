@@ -1,0 +1,68 @@
+name: publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  dxt:
+    name: Build and attach DXT bundle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (with dev deps)
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Prune dev dependencies
+        run: npm prune --omit=dev
+
+      - name: Stage DXT bundle
+        run: |
+          mkdir -p .dxt-build
+          cp manifest.json package.json README.md LICENSE .dxt-build/
+          cp -R dist node_modules .dxt-build/
+
+      - name: Package DXT
+        run: |
+          cd .dxt-build
+          zip -r "../monzo-mcp-${{ github.event.release.tag_name }}.dxt" .
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "monzo-mcp-${{ github.event.release.tag_name }}.dxt" \
+            --repo "${{ github.repository }}" --clobber

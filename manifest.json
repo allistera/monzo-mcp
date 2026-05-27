@@ -1,0 +1,68 @@
+{
+  "dxt_version": "0.1",
+  "name": "monzo-mcp",
+  "display_name": "Monzo",
+  "version": "0.1.0",
+  "description": "MCP server for the Monzo banking API.",
+  "long_description": "Exposes Monzo's API as MCP tools (accounts, balance, pots, transactions, feed items, attachments, receipts, webhooks). Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so access tokens renew automatically. For personal use — Monzo states their API is not suitable for public applications.",
+  "author": {
+    "name": "Allister Antosik",
+    "url": "https://github.com/allistera"
+  },
+  "homepage": "https://github.com/allistera/monzo-mcp",
+  "documentation": "https://github.com/allistera/monzo-mcp#readme",
+  "support": "https://github.com/allistera/monzo-mcp/issues",
+  "license": "MIT",
+  "keywords": ["monzo", "banking", "oauth2"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "MONZO_MODE": "${user_config.mode}",
+        "MONZO_CLIENT_ID": "${user_config.client_id}",
+        "MONZO_CLIENT_SECRET": "${user_config.client_secret}",
+        "MONZO_REDIRECT_URI": "${user_config.redirect_uri}"
+      }
+    }
+  },
+  "user_config": {
+    "mode": {
+      "type": "string",
+      "title": "Mode",
+      "description": "'read' (default) exposes only read tools. 'write' also exposes mutating tools (pot transfers, annotations, receipts, webhooks, logout).",
+      "default": "read",
+      "required": false
+    },
+    "client_id": {
+      "type": "string",
+      "title": "Monzo client ID",
+      "description": "OAuth client id from https://developers.monzo.com/ — only needed when running the one-time `monzo-mcp auth` flow.",
+      "required": false,
+      "sensitive": false
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Monzo client secret",
+      "description": "OAuth client secret — only needed for the one-time `auth` flow.",
+      "required": false,
+      "sensitive": true
+    },
+    "redirect_uri": {
+      "type": "string",
+      "title": "OAuth redirect URI",
+      "description": "Must match the redirect URI registered on your Monzo OAuth client. Defaults to http://localhost:8765/callback.",
+      "default": "http://localhost:8765/callback",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "node": ">=18"
+    }
+  }
+}
