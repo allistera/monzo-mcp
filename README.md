@@ -15,17 +15,7 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 
 ## Install
 
-### Via npm (recommended)
-
-```sh
-# one-time OAuth setup
-MONZO_CLIENT_ID=oauth2client_... MONZO_CLIENT_SECRET=mnzconf.... \
-  npx monzo-mcp auth
-
-# then add to your MCP client config (see "Configure your MCP client" below)
-```
-
-### Via Claude Desktop Extension (.dxt)
+### Via Claude Desktop Extension (.dxt) — recommended
 
 Download the latest `monzo-mcp-vX.Y.Z.dxt` from the [releases page](https://github.com/allistera/monzo-mcp/releases) and double-click to install into Claude Desktop. You'll still need to run the OAuth flow once — see step 3 below.
 
@@ -179,11 +169,9 @@ A PR-title check (`.github/workflows/pr-title.yml`) enforces the format. Since `
 1. Merge Conventional-Commit PRs into `main`.
 2. The `release-please` workflow keeps an open "Release PR" up to date — it bumps the version in `package.json`, `manifest.json`, and `.release-please-manifest.json`, and writes a `CHANGELOG.md`.
 3. Merging the Release PR creates a Git tag and a GitHub release.
-4. The `publish` workflow triggers on `release.published`:
-   - Publishes to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements) (signed attestation back to the workflow run).
-   - Builds the Claude Desktop Extension bundle (`.dxt`) and attaches it to the GitHub release.
+4. The `publish` workflow triggers on `release.published` and builds the Claude Desktop Extension bundle (`.dxt`), attaching it to the GitHub release.
 
-**Required secret:** `NPM_TOKEN` — an npm automation token with publish access. Set it in repo settings → Secrets and variables → Actions.
+Distribution is GitHub-only — no npm registry. Users install via the `.dxt` artifact or by cloning the repo.
 
 ### Branch protection
 

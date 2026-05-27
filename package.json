@@ -30,10 +30,7 @@
   "bugs": {
     "url": "https://github.com/allistera/monzo-mcp/issues"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
+  "private": true,
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -43,8 +40,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"no tests yet\" && exit 0",
-    "prepublishOnly": "npm run build"
+    "test": "echo \"no tests yet\" && exit 0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
