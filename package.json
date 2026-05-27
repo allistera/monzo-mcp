@@ -1,0 +1,39 @@
+{
+  "name": "monzo-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the Monzo banking API",
+  "type": "module",
+  "bin": {
+    "monzo-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "auth": "node dist/index.js auth",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "echo \"no tests yet\" && exit 0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.15.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.15.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
