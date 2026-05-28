@@ -13,6 +13,33 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 - Read-only by default; writes gated behind `MONZO_MODE=write`
 - Full API coverage: accounts, balance, pots (deposit/withdraw), transactions (list/get/annotate), feed items, attachments, receipts, webhooks
 
+## What can it do?
+
+**Reading / viewing (the bulk of it)**
+
+- Check the balance of any of your accounts
+- List your accounts (you've got 5 — 3 open: personal, joint, Infinity Design Wave business; 2 closed)
+- List transactions for an account, including merchant detail and pagination through history
+- Look up a single transaction by ID
+- List pots on an account
+List webhooks registered on an account
+- Retrieve receipts and attachments tied to transactions
+
+**Writing (limited)**
+
+- Move money into or out of a pot (deposit / withdraw) — but only between an account and its own pots, and only if the pot already exists. You currently have no active pots.
+- Annotate transactions (add notes/metadata) and create/manage receipts and attachments
+- Create a basic feed item in your Monzo app feed
+- Register or delete webhooks
+
+**What I can't do** — and these keep coming up, so worth stating plainly:
+
+- Send money to another account (no transfers/payments — that's why the joint-account and business-account moves weren't possible)
+- Create or delete pots
+- Anything Monzo's API doesn't expose, which is most account-management actions
+
+
+
 ## Install
 
 ### Via Claude Desktop Extension (.dxt) — recommended
@@ -22,8 +49,7 @@ Download the latest `monzo-mcp-vX.Y.Z.dxt` from the [releases page](https://gith
 ### From source
 
 ```sh
-git clone https://github.com/allistera/monzo-mcp.git
-cd monzo-mcp
+git clone https://github.com/allistera/monzo-mcp.git && cd monzo-mcp
 npm install
 npm run build
 ```
