@@ -22,7 +22,7 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 - List transactions for an account, including merchant detail and pagination through history
 - Look up a single transaction by ID
 - List pots on an account
-List webhooks registered on an account
+  List webhooks registered on an account
 - Retrieve receipts and attachments tied to transactions
 
 **Writing (limited)**
@@ -37,8 +37,6 @@ List webhooks registered on an account
 - Send money to another account (no transfers/payments — that's why the joint-account and business-account moves weren't possible)
 - Create or delete pots
 - Anything Monzo's API doesn't expose, which is most account-management actions
-
-
 
 ## Install
 
