@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "monzo-mcp",
   "display_name": "Monzo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server for the Monzo banking API.",
   "long_description": "Exposes Monzo's API as MCP tools (accounts, balance, pots, transactions, feed items, attachments, receipts, webhooks). Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so access tokens renew automatically. For personal use — Monzo states their API is not suitable for public applications.",
   "author": {

@@ -1,6 +1,6 @@
 {
   "name": "monzo-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server for the Monzo banking API (OAuth 2.0, stdio)",
   "type": "module",
   "bin": {
