@@ -12,6 +12,35 @@ export interface ToolDef {
 
 const empty = z.object({}).strict();
 
+interface Account {
+  id: string;
+  closed?: boolean;
+  type?: string;
+}
+
+let cachedDefaultAccountId: string | undefined;
+
+async function resolveDefaultAccountId(): Promise<string> {
+  if (cachedDefaultAccountId) return cachedDefaultAccountId;
+  const res = await monzoRequest<{ accounts: Account[] }>({
+    path: "/accounts",
+    query: { account_type: "uk_retail" },
+  });
+  const open = (res.accounts ?? []).filter((a) => !a.closed);
+  if (open.length === 0) {
+    throw new Error(
+      "No open uk_retail account found; pass account_id explicitly.",
+    );
+  }
+  if (open.length > 1) {
+    throw new Error(
+      `Multiple open uk_retail accounts (${open.map((a) => a.id).join(", ")}); pass account_id explicitly.`,
+    );
+  }
+  cachedDefaultAccountId = open[0].id;
+  return cachedDefaultAccountId;
+}
+
 export const tools: ToolDef[] = [
   {
     name: "whoami",
@@ -34,32 +63,41 @@ export const tools: ToolDef[] = [
   },
   {
     name: "get_balance",
-    description: "Read the balance for an account.",
+    description:
+      "Read the balance for an account. If account_id is omitted, defaults to the user's single open uk_retail account.",
     mode: "read",
-    inputSchema: z.object({ account_id: z.string() }).strict(),
-    handler: (args) => {
-      const { account_id } = args as { account_id: string };
-      return monzoRequest({ path: "/balance", query: { account_id } });
+    inputSchema: z.object({ account_id: z.string().optional() }).strict(),
+    handler: async (args) => {
+      const { account_id } = args as { account_id?: string };
+      const id = account_id ?? (await resolveDefaultAccountId());
+      return monzoRequest({ path: "/balance", query: { account_id: id } });
     },
   },
   {
     name: "list_pots",
-    description: "List pots for a current account.",
+    description:
+      "List pots for a current account. If current_account_id is omitted, defaults to the user's single open uk_retail account.",
     mode: "read",
-    inputSchema: z.object({ current_account_id: z.string() }).strict(),
-    handler: (args) => {
-      const { current_account_id } = args as { current_account_id: string };
-      return monzoRequest({ path: "/pots", query: { current_account_id } });
+    inputSchema: z
+      .object({ current_account_id: z.string().optional() })
+      .strict(),
+    handler: async (args) => {
+      const { current_account_id } = args as { current_account_id?: string };
+      const id = current_account_id ?? (await resolveDefaultAccountId());
+      return monzoRequest({
+        path: "/pots",
+        query: { current_account_id: id },
+      });
     },
   },
   {
     name: "list_transactions",
     description:
-      "List transactions for an account. Supports pagination (since/before/limit) and expanding the merchant.",
+      "List transactions for an account. Supports pagination (since/before/limit) and expanding the merchant. If account_id is omitted, defaults to the user's single open uk_retail account.",
     mode: "read",
     inputSchema: z
       .object({
-        account_id: z.string(),
+        account_id: z.string().optional(),
         since: z
           .string()
           .optional()
@@ -69,18 +107,19 @@ export const tools: ToolDef[] = [
         expand_merchant: z.boolean().optional(),
       })
       .strict(),
-    handler: (args) => {
+    handler: async (args) => {
       const a = args as {
-        account_id: string;
+        account_id?: string;
         since?: string;
         before?: string;
         limit?: number;
         expand_merchant?: boolean;
       };
+      const account_id = a.account_id ?? (await resolveDefaultAccountId());
       return monzoRequest({
         path: "/transactions",
         query: {
-          account_id: a.account_id,
+          account_id,
           since: a.since,
           before: a.before,
           limit: a.limit,
@@ -109,12 +148,14 @@ export const tools: ToolDef[] = [
   },
   {
     name: "list_webhooks",
-    description: "List webhooks registered for an account.",
+    description:
+      "List webhooks registered for an account. If account_id is omitted, defaults to the user's single open uk_retail account.",
     mode: "read",
-    inputSchema: z.object({ account_id: z.string() }).strict(),
-    handler: (args) => {
-      const { account_id } = args as { account_id: string };
-      return monzoRequest({ path: "/webhooks", query: { account_id } });
+    inputSchema: z.object({ account_id: z.string().optional() }).strict(),
+    handler: async (args) => {
+      const { account_id } = args as { account_id?: string };
+      const id = account_id ?? (await resolveDefaultAccountId());
+      return monzoRequest({ path: "/webhooks", query: { account_id: id } });
     },
   },
   {
