@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "monzo-mcp",
   "display_name": "Monzo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for the Monzo banking API.",
   "long_description": "Exposes Monzo's API as MCP tools (accounts, balance, pots, transactions, feed items, attachments, receipts, webhooks). Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so access tokens renew automatically. For personal use — Monzo states their API is not suitable for public applications.",
   "author": {
@@ -13,13 +13,19 @@
   "documentation": "https://github.com/allistera/monzo-mcp#readme",
   "support": "https://github.com/allistera/monzo-mcp/issues",
   "license": "MIT",
-  "keywords": ["monzo", "banking", "oauth2"],
+  "keywords": [
+    "monzo",
+    "banking",
+    "oauth2"
+  ],
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dist/index.js"],
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
       "env": {
         "MONZO_MODE": "${user_config.mode}",
         "MONZO_CLIENT_ID": "${user_config.client_id}",
@@ -60,7 +66,11 @@
   },
   "compatibility": {
     "claude_desktop": ">=0.10.0",
-    "platforms": ["darwin", "linux", "win32"],
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
     "runtimes": {
       "node": ">=18"
     }
