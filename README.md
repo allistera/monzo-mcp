@@ -4,6 +4,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server for the [Mon
 
 Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so the server can renew access tokens automatically.
 
+**Read Only by Default** - No write actions can be triggered unless you change the `MONZO_MODE` environment variabe from `read` to `write`
+
 > **Personal use only.** Monzo state in their docs: _"The Monzo Developer API is not suitable for building public applications."_ Use this for your own account, or with users who have explicitly approved your client.
 
 ## Features
