@@ -32,3 +32,5 @@ jobs:
             deps-dev
           requireScope: false
           subjectPattern: ^[A-Za-z].+$
+          headerPattern: '^([\w\-]*)(?:\(([\w$.\-*/ ]*)\))?: (.*)$'
+          headerPatternCorrespondence: type, scope, subject
