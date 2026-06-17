@@ -29,5 +29,6 @@ jobs:
             test
             revert
             deps
+            deps-dev
           requireScope: false
           subjectPattern: ^[A-Za-z].+$
