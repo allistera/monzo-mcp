@@ -8,6 +8,7 @@ import { randomBytes } from "node:crypto";
 const AUTH_URL = "https://auth.monzo.com/";
 const TOKEN_URL = "https://api.monzo.com/oauth2/token";
 const TOKEN_PATH = join(homedir(), ".monzo-mcp", "tokens.json");
+const OAUTH_CALLBACK_TIMEOUT_MS = 5 * 60_000;
 
 export interface TokenSet {
   access_token: string;
@@ -85,6 +86,135 @@ function openBrowser(url: string): void {
   exec(cmd, () => {});
 }
 
+export interface OAuthRedirectTarget {
+  host: string;
+  port: number;
+  expectedPath: string;
+}
+
+export function parseOAuthRedirectUri(
+  redirectUri: string,
+): OAuthRedirectTarget {
+  const url = new URL(redirectUri);
+  if (url.protocol !== "http:") {
+    throw new Error("MONZO_REDIRECT_URI must use http");
+  }
+  if (url.username || url.password || url.hash) {
+    throw new Error(
+      "MONZO_REDIRECT_URI must not contain credentials or a fragment",
+    );
+  }
+
+  const host =
+    url.hostname === "localhost"
+      ? "127.0.0.1"
+      : url.hostname === "[::1]"
+        ? "::1"
+        : url.hostname;
+  if (host !== "127.0.0.1" && host !== "::1") {
+    throw new Error("MONZO_REDIRECT_URI must use a loopback host");
+  }
+
+  return {
+    host,
+    port: Number(url.port || 80),
+    expectedPath: url.pathname,
+  };
+}
+
+export interface OAuthCallbackListener {
+  server: ReturnType<typeof createServer>;
+  host: string;
+  port: number;
+  code: Promise<string>;
+}
+
+export function createOAuthCallbackListener(
+  redirectUri: string,
+  state: string,
+  timeoutMs = OAUTH_CALLBACK_TIMEOUT_MS,
+): OAuthCallbackListener {
+  const { host, port, expectedPath } = parseOAuthRedirectUri(redirectUri);
+  let resolveCode: (code: string) => void;
+  let rejectCode: (error: Error) => void;
+  let settled = false;
+
+  const code = new Promise<string>((resolve, reject) => {
+    resolveCode = resolve;
+    rejectCode = reject;
+  });
+
+  const server = createServer((req, res) => {
+    if (!req.url) {
+      res.writeHead(400).end();
+      return;
+    }
+
+    const reqUrl = new URL(req.url, redirectUri);
+    if (reqUrl.pathname !== expectedPath) {
+      res.writeHead(404).end();
+      return;
+    }
+
+    const returnedState = reqUrl.searchParams.get("state");
+    if (returnedState !== state) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Invalid state");
+      return;
+    }
+
+    const error = reqUrl.searchParams.get("error");
+    if (error) {
+      res
+        .writeHead(400, { "Content-Type": "text/plain" })
+        .end("OAuth authorization failed");
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeout);
+        server.close();
+        rejectCode(new Error(`OAuth error: ${error}`));
+      }
+      return;
+    }
+
+    const returnedCode = reqUrl.searchParams.get("code");
+    if (!returnedCode) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Missing code");
+      return;
+    }
+
+    res
+      .writeHead(200, { "Content-Type": "text/html" })
+      .end(
+        "<html><body><h2>Monzo auth received.</h2><p>Approve the request in your Monzo app, then return to the terminal.</p></body></html>",
+      );
+    if (!settled) {
+      settled = true;
+      clearTimeout(timeout);
+      server.close();
+      resolveCode(returnedCode);
+    }
+  });
+
+  server.on("error", (error) => {
+    if (!settled) {
+      settled = true;
+      clearTimeout(timeout);
+      rejectCode(error);
+    }
+  });
+
+  const timeout = setTimeout(() => {
+    if (!settled) {
+      settled = true;
+      server.close();
+      rejectCode(new Error("OAuth callback timed out"));
+    }
+  }, timeoutMs);
+  timeout.unref();
+
+  return { server, host, port, code };
+}
+
 export async function runAuthFlow(): Promise<void> {
   const client_id = process.env.MONZO_CLIENT_ID;
   const client_secret = process.env.MONZO_CLIENT_SECRET;
@@ -98,9 +228,6 @@ export async function runAuthFlow(): Promise<void> {
     );
   }
 
-  const url = new URL(redirect_uri);
-  const port = Number(url.port || 80);
-  const expectedPath = url.pathname;
   const state = randomBytes(16).toString("hex");
 
   const authorizeUrl = new URL(AUTH_URL);
@@ -109,49 +236,14 @@ export async function runAuthFlow(): Promise<void> {
   authorizeUrl.searchParams.set("response_type", "code");
   authorizeUrl.searchParams.set("state", state);
 
-  const code: string = await new Promise((resolve, reject) => {
-    const server = createServer((req, res) => {
-      if (!req.url) return;
-      const reqUrl = new URL(req.url, redirect_uri);
-      if (reqUrl.pathname !== expectedPath) {
-        res.writeHead(404).end();
-        return;
-      }
-      const returnedState = reqUrl.searchParams.get("state");
-      const returnedCode = reqUrl.searchParams.get("code");
-      const error = reqUrl.searchParams.get("error");
-      if (error) {
-        res
-          .writeHead(400, { "Content-Type": "text/plain" })
-          .end(`Error: ${error}`);
-        server.close();
-        reject(new Error(`OAuth error: ${error}`));
-        return;
-      }
-      if (returnedState !== state || !returnedCode) {
-        res
-          .writeHead(400, { "Content-Type": "text/plain" })
-          .end("Invalid state or missing code");
-        server.close();
-        reject(new Error("Invalid state or missing code"));
-        return;
-      }
-      res
-        .writeHead(200, { "Content-Type": "text/html" })
-        .end(
-          "<html><body><h2>Monzo auth received.</h2><p>Approve the request in your Monzo app, then return to the terminal.</p></body></html>",
-        );
-      server.close();
-      resolve(returnedCode);
-    });
-    server.on("error", reject);
-    server.listen(port, () => {
-      process.stderr.write(
-        `Listening on ${redirect_uri}\nOpen this URL to authorise:\n${authorizeUrl.toString()}\n`,
-      );
-      openBrowser(authorizeUrl.toString());
-    });
+  const callback = createOAuthCallbackListener(redirect_uri, state);
+  callback.server.listen(callback.port, callback.host, () => {
+    process.stderr.write(
+      `Listening on ${redirect_uri}\nOpen this URL to authorise:\n${authorizeUrl.toString()}\n`,
+    );
+    openBrowser(authorizeUrl.toString());
   });
+  const code = await callback.code;
 
   const resp = await exchange({
     grant_type: "authorization_code",

@@ -4,6 +4,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server for the [Mon
 
 Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so the server can renew access tokens automatically.
 
+Implements MCP specification `2026-07-28` and retains automatic compatibility with clients using the `2025-11-25` protocol era.
+
 > **Personal use only.** Monzo state in their docs: _"The Monzo Developer API is not suitable for building public applications."_ Use this for your own account, or with users who have explicitly approved your client.
 
 ## Features
@@ -11,6 +13,7 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 - OAuth 2.0 authorization-code flow with local callback server and CSRF `state` check
 - Token persistence at `~/.monzo-mcp/tokens.json` (mode `0600`) with automatic refresh
 - Read-only by default; writes gated behind `MONZO_MODE=write`
+- MCP `2026-07-28` structured tool results, display titles, and safety annotations
 - Full API coverage: accounts, balance, pots (deposit/withdraw), transactions (list/get/annotate), feed items, attachments, receipts, webhooks
 
 ## What can it do?
@@ -18,7 +21,7 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 **Reading / viewing (the bulk of it)**
 
 - Check the balance of any of your accounts
-- List your accounts (you've got 5 — 3 open: personal, joint, Infinity Design Wave business; 2 closed)
+- List accounts available to the authorized Monzo API client
 - List transactions for an account, including merchant detail and pagination through history
 - Look up a single transaction by ID
 - List pots on an account
@@ -27,14 +30,14 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 
 **Writing (limited)**
 
-- Move money into or out of a pot (deposit / withdraw) — but only between an account and its own pots, and only if the pot already exists. You currently have no active pots.
+- Move money into or out of an existing pot (deposit / withdraw), limited to the pot's own account
 - Annotate transactions (add notes/metadata) and create/manage receipts and attachments
 - Create a basic feed item in your Monzo app feed
 - Register or delete webhooks
 
 **What I can't do** — and these keep coming up, so worth stating plainly:
 
-- Send money to another account (no transfers/payments — that's why the joint-account and business-account moves weren't possible)
+- Send money to another account (transfers and payments are not exposed by this integration)
 - Create or delete pots
 - Anything Monzo's API doesn't expose, which is most account-management actions
 
@@ -51,6 +54,8 @@ git clone https://github.com/allistera/monzo-mcp.git && cd monzo-mcp
 npm install
 npm run build
 ```
+
+Node.js 20 or newer is required.
 
 ## Setup
 
