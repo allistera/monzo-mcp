@@ -21,7 +21,7 @@ Implements MCP specification `2026-07-28` and retains automatic compatibility wi
 **Reading / viewing (the bulk of it)**
 
 - Check the balance of any of your accounts
-- List your accounts (you've got 5 — 3 open: personal, joint, Infinity Design Wave business; 2 closed)
+- List accounts available to the authorized Monzo API client
 - List transactions for an account, including merchant detail and pagination through history
 - Look up a single transaction by ID
 - List pots on an account
@@ -30,14 +30,14 @@ Implements MCP specification `2026-07-28` and retains automatic compatibility wi
 
 **Writing (limited)**
 
-- Move money into or out of a pot (deposit / withdraw) — but only between an account and its own pots, and only if the pot already exists. You currently have no active pots.
+- Move money into or out of an existing pot (deposit / withdraw), limited to the pot's own account
 - Annotate transactions (add notes/metadata) and create/manage receipts and attachments
 - Create a basic feed item in your Monzo app feed
 - Register or delete webhooks
 
 **What I can't do** — and these keep coming up, so worth stating plainly:
 
-- Send money to another account (no transfers/payments — that's why the joint-account and business-account moves weren't possible)
+- Send money to another account (transfers and payments are not exposed by this integration)
 - Create or delete pots
 - Anything Monzo's API doesn't expose, which is most account-management actions
 
