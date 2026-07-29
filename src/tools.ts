@@ -1,3 +1,4 @@
+import type { ToolAnnotations } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { monzoRequest } from "./monzo.js";
 
@@ -6,6 +7,8 @@ export interface ToolDef {
   description: string;
   /** "read" tools are always exposed; "write" tools only when MONZO_MODE=write. */
   mode: "read" | "write";
+  /** Optional overrides for MCP tool behaviour hints. */
+  annotations?: ToolAnnotations;
   inputSchema: z.ZodTypeAny;
   handler: (args: unknown) => Promise<unknown>;
 }
@@ -206,6 +209,7 @@ export const tools: ToolDef[] = [
     description:
       "Deposit funds from a source account into a pot. Amount is in minor units (pennies for GBP). dedupe_id must be unique per logical transfer.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: z
       .object({
         pot_id: z.string(),
@@ -237,6 +241,7 @@ export const tools: ToolDef[] = [
     description:
       "Withdraw funds from a pot to a destination account. Amount in minor units. Blocked if the pot has 'added security' enabled.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: z
       .object({
         pot_id: z.string(),
@@ -267,6 +272,7 @@ export const tools: ToolDef[] = [
     name: "create_feed_item",
     description: "Create a basic feed item in the user's account feed.",
     mode: "write",
+    annotations: { destructiveHint: false },
     inputSchema: z
       .object({
         account_id: z.string(),
@@ -305,6 +311,7 @@ export const tools: ToolDef[] = [
     description:
       "Request a temporary upload URL for a file. Returns file_url and upload_url. PUT the file bytes to upload_url separately, then call attachment_register.",
     mode: "write",
+    annotations: { destructiveHint: false },
     inputSchema: z
       .object({
         file_name: z.string(),
@@ -333,6 +340,7 @@ export const tools: ToolDef[] = [
     name: "attachment_register",
     description: "Register an uploaded file as an attachment on a transaction.",
     mode: "write",
+    annotations: { destructiveHint: false },
     inputSchema: z
       .object({
         external_id: z.string().describe("transaction id"),
@@ -372,6 +380,7 @@ export const tools: ToolDef[] = [
     description:
       "Create or update a receipt for a transaction. external_id acts as the idempotency key.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: z
       .object({
         external_id: z.string(),
@@ -404,6 +413,7 @@ export const tools: ToolDef[] = [
     name: "delete_receipt",
     description: "Delete a receipt by external_id.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: z.object({ external_id: z.string() }).strict(),
     handler: (args) => {
       const { external_id } = args as { external_id: string };
@@ -419,6 +429,7 @@ export const tools: ToolDef[] = [
     description:
       "Register a webhook URL to receive transaction.created events for an account.",
     mode: "write",
+    annotations: { destructiveHint: false },
     inputSchema: z
       .object({ account_id: z.string(), url: z.string().url() })
       .strict(),
@@ -431,6 +442,7 @@ export const tools: ToolDef[] = [
     name: "delete_webhook",
     description: "Delete a webhook by id.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: z.object({ webhook_id: z.string() }).strict(),
     handler: (args) => {
       const { webhook_id } = args as { webhook_id: string };
@@ -445,6 +457,7 @@ export const tools: ToolDef[] = [
     description:
       "Invalidate the current access token via /oauth2/logout. You will need to re-run `monzo-mcp auth` afterwards.",
     mode: "write",
+    annotations: { idempotentHint: true },
     inputSchema: empty,
     handler: () => monzoRequest({ method: "POST", path: "/oauth2/logout" }),
   },

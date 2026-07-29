@@ -4,6 +4,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server for the [Mon
 
 Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authenticates via OAuth 2.0 (authorization code flow) and persists refresh tokens locally so the server can renew access tokens automatically.
 
+Implements MCP specification `2026-07-28` and retains automatic compatibility with clients using the `2025-11-25` protocol era.
+
 > **Personal use only.** Monzo state in their docs: _"The Monzo Developer API is not suitable for building public applications."_ Use this for your own account, or with users who have explicitly approved your client.
 
 ## Features
@@ -11,6 +13,7 @@ Exposes Monzo's API to MCP clients (Claude Desktop, etc.) over stdio. Authentica
 - OAuth 2.0 authorization-code flow with local callback server and CSRF `state` check
 - Token persistence at `~/.monzo-mcp/tokens.json` (mode `0600`) with automatic refresh
 - Read-only by default; writes gated behind `MONZO_MODE=write`
+- MCP `2026-07-28` structured tool results, display titles, and safety annotations
 - Full API coverage: accounts, balance, pots (deposit/withdraw), transactions (list/get/annotate), feed items, attachments, receipts, webhooks
 
 ## What can it do?
@@ -51,6 +54,8 @@ git clone https://github.com/allistera/monzo-mcp.git && cd monzo-mcp
 npm install
 npm run build
 ```
+
+Node.js 20 or newer is required.
 
 ## Setup
 
