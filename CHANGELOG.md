@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/allistera/monzo-mcp/compare/v0.1.2...v0.1.3) (2026-07-29)
+
+
+### Features
+
+* support MCP 2026-07-28 specification ([#37](https://github.com/allistera/monzo-mcp/issues/37)) ([14c76e7](https://github.com/allistera/monzo-mcp/commit/14c76e7897771ca67e1255151281684ef860b167))
+
 ## [0.1.2](https://github.com/allistera/monzo-mcp/compare/v0.1.1...v0.1.2) (2026-05-28)
 
 
