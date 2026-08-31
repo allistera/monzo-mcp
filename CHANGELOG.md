@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/allistera/monzo-mcp/compare/v0.1.3...v0.1.4) (2026-08-31)
+
+
+### Bug Fixes
+
+* address review findings ([#53](https://github.com/allistera/monzo-mcp/issues/53)) ([9645aa8](https://github.com/allistera/monzo-mcp/commit/9645aa81058bf9666209c2f7f8221c98da904ecf))
+
 ## [0.1.3](https://github.com/allistera/monzo-mcp/compare/v0.1.2...v0.1.3) (2026-07-29)
 
 
