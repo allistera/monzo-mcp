@@ -1,4 +1,5 @@
 import { forceRefresh, getValidAccessToken } from "./auth.js";
+import { fetchWithTimeout } from "./http.js";
 
 const BASE_URL = "https://api.monzo.com";
 
@@ -52,25 +53,30 @@ export async function monzoRequest<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${BASE_URL}${opts.path}${buildQuery(opts.query)}`, {
-    method: opts.method ?? "GET",
-    headers,
-    body,
-  });
+  return fetchWithTimeout(
+    `${BASE_URL}${opts.path}${buildQuery(opts.query)}`,
+    {
+      method: opts.method ?? "GET",
+      headers,
+      body,
+    },
+    async (res) => {
+      if (res.status === 401 && retry) {
+        await res.text();
+        await forceRefresh(token);
+        return monzoRequest<T>(opts, false);
+      }
 
-  if (res.status === 401 && retry) {
-    await forceRefresh();
-    return monzoRequest<T>(opts, false);
-  }
-
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`Monzo API ${res.status} ${res.statusText}: ${text}`);
-  }
-  if (!text) return undefined as T;
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return text as unknown as T;
-  }
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(`Monzo API ${res.status} ${res.statusText}: ${text}`);
+      }
+      if (!text) return undefined as T;
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        return text as unknown as T;
+      }
+    },
+  );
 }

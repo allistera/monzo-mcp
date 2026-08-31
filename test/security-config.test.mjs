@@ -29,16 +29,57 @@ describe("GitHub Actions security policy", () => {
       }
     }
 
-    assert.equal(actionCount, 9);
+    assert.equal(actionCount, 11);
   });
 
-  it("keeps CI read-only and does not persist checkout credentials", async () => {
-    const ci = await readFile(repoFile(".github/workflows/ci.yml"), "utf8");
+  it("keeps every checkout from persisting credentials", async () => {
+    const workflowDirectory = repoFile(".github/workflows/");
+    const workflowNames = ["ci.yml", "release-please.yml"];
+    const ci = await readFile(new URL("ci.yml", workflowDirectory), "utf8");
     assert.match(ci, /^permissions:\n\s{2}contents: read$/m);
-    assert.match(
-      ci,
-      /uses: actions\/checkout@[0-9a-f]{40}[^\n]*\n\s+with:\n\s+persist-credentials: false/,
+
+    for (const name of workflowNames) {
+      const lines = (
+        await readFile(new URL(name, workflowDirectory), "utf8")
+      ).split("\n");
+      for (let index = 0; index < lines.length; index += 1) {
+        if (!/^\s*-?\s*uses:\s+actions\/checkout@/.test(lines[index])) {
+          continue;
+        }
+
+        const stepIndent = lines[index].match(/^\s*/)[0].length;
+        const stepLines = [];
+        for (let next = index + 1; next < lines.length; next += 1) {
+          const line = lines[next];
+          const indent = line.match(/^\s*/)[0].length;
+          if (line.trim() && indent <= stepIndent) break;
+          stepLines.push(line);
+        }
+        assert.match(
+          stepLines.join("\n"),
+          /(^|\n)\s+persist-credentials:\s*false\s*(\n|$)/,
+          `${name}: checkout must set persist-credentials: false`,
+        );
+      }
+    }
+  });
+
+  it("keeps dependency/build commands out of the write-scoped release job", async () => {
+    const release = await readFile(
+      repoFile(".github/workflows/release-please.yml"),
+      "utf8",
     );
+    const attachJob = release.slice(release.indexOf("  attach-dxt:"));
+
+    assert.match(
+      release,
+      /\n[ ]{2}dxt:[\s\S]*?\n[ ]{4}permissions:\n[ ]{6}contents: read/,
+    );
+    assert.match(attachJob, /[ ]{4}permissions:\n[ ]{6}contents: write/);
+    assert.doesNotMatch(attachJob, /\b(?:npm|yarn|pnpm|npx)\b/);
+    assert.doesNotMatch(attachJob, /actions\/checkout@/);
+    assert.match(attachJob, /actions\/download-artifact@[0-9a-f]{40}/);
+    assert.match(attachJob, /gh release upload/);
   });
 });
 

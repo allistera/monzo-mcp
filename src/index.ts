@@ -2,6 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { runAuthFlow } from "./auth.js";
+import { ProtocolVersionTransport } from "./protocol-transport.js";
 import { createMonzoServer, enabledToolCount, parseMode } from "./server.js";
 
 interface PackageMetadata {
@@ -18,7 +19,9 @@ async function runServer(): Promise<void> {
   const mode = parseMode(process.env.MONZO_MODE);
   const version = await packageVersion();
 
-  serveStdio(() => createMonzoServer(mode, version));
+  serveStdio(() => createMonzoServer(mode, version), {
+    transport: new ProtocolVersionTransport(),
+  });
   process.stderr.write(
     `monzo-mcp running on stdio (mode=${mode}, tools=${enabledToolCount(mode)}, MCP=2026-07-28 with legacy fallback)\n`,
   );

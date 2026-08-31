@@ -131,6 +131,76 @@ test("serves MCP 2026-07-28 over stdio", async (t) => {
   assert.equal(deposit.annotations.idempotentHint, true);
 });
 
+test("rejects unsupported modern revisions without poisoning the connection", async (t) => {
+  const server = startServer("read");
+  t.after(() => server.close());
+
+  server.send({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/list",
+    params: { _meta: modernMeta() },
+  });
+  const initial = await server.receive();
+  assert.equal(initial.result.resultType, "complete");
+
+  server.send({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/list",
+    params: {
+      _meta: {
+        ...modernMeta(),
+        "io.modelcontextprotocol/protocolVersion": "2099-01-01",
+      },
+    },
+  });
+  const rejected = await server.receive();
+  assert.equal(rejected.error.code, -32022);
+  assert.deepEqual(rejected.error.data, {
+    supported: ["2026-07-28"],
+    requested: "2099-01-01",
+  });
+
+  server.send({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/list",
+    params: { _meta: modernMeta() },
+  });
+  const recovered = await server.receive();
+  assert.equal(recovered.result.resultType, "complete");
+  assert.equal(recovered.result.tools.length, 8);
+});
+
+test("preserves invalid-envelope errors for malformed protocol claims", async (t) => {
+  const server = startServer("read");
+  t.after(() => server.close());
+
+  server.send({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/list",
+    params: { _meta: modernMeta() },
+  });
+  const initial = await server.receive();
+  assert.equal(initial.result.resultType, "complete");
+
+  server.send({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/list",
+    params: {
+      _meta: {
+        ...modernMeta(),
+        "io.modelcontextprotocol/protocolVersion": 20260728,
+      },
+    },
+  });
+  const rejected = await server.receive();
+  assert.equal(rejected.error.code, -32602);
+});
+
 test("retains MCP 2025-11-25 compatibility", async (t) => {
   const server = startServer("read");
   t.after(() => server.close());
