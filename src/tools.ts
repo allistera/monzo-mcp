@@ -21,10 +21,7 @@ interface Account {
   type?: string;
 }
 
-let cachedDefaultAccountId: string | undefined;
-
 async function resolveDefaultAccountId(): Promise<string> {
-  if (cachedDefaultAccountId) return cachedDefaultAccountId;
   const res = await monzoRequest<{ accounts: Account[] }>({
     path: "/accounts",
     query: { account_type: "uk_retail" },
@@ -40,8 +37,7 @@ async function resolveDefaultAccountId(): Promise<string> {
       `Multiple open uk_retail accounts (${open.map((a) => a.id).join(", ")}); pass account_id explicitly.`,
     );
   }
-  cachedDefaultAccountId = open[0].id;
-  return cachedDefaultAccountId;
+  return open[0].id;
 }
 
 export const tools: ToolDef[] = [
@@ -402,9 +398,9 @@ export const tools: ToolDef[] = [
         method: "PUT",
         path: "/transaction-receipts",
         json: {
+          ...a.receipt,
           external_id: a.external_id,
           transaction_id: a.transaction_id,
-          ...a.receipt,
         },
       });
     },
