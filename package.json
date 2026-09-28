@@ -43,8 +43,8 @@
     "test": "npm run build && node --test"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "^2.0.0",
-    "zod": "^4.5.4"
+    "@modelcontextprotocol/server": "^2.1.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
